@@ -694,9 +694,21 @@ async def start_telethon():
         return
     from telethon import TelegramClient
     from telethon.sessions import StringSession
-    tg = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
-    await tg.start()
-    await tg.get_dialogs()
+    try:
+        client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
+        await client.start()
+        me = await client.get_me()
+        if me.bot:
+            logging.error("SESSION_STRING BOT tokeni bilan olingan! Telefon raqam bilan qayta oling. "
+                          "Post ko'rishlari o'qilmaydi.")
+            await client.disconnect()
+            return
+        await client.get_dialogs()
+        tg = client
+        logging.info("Telethon ulandi: %s", me.first_name)
+    except Exception:
+        logging.exception("Telethon ishga tushmadi, post ko'rishlari o'qilmaydi")
+        tg = None
 
 
 LAST_SYNC: dict = {}
